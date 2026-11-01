@@ -1,17 +1,19 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { nextFetch, FetchResponse } from "./NextFetch";
 import { revalidateTags } from "./revalidateTags";
 import { DoctorQueryParams, IDoctor, IPatient } from "@/types";
 
 export async function getDoctors(
-  params: DoctorQueryParams = {}
+  params: DoctorQueryParams = {},
 ): Promise<FetchResponse<IDoctor[]>> {
   const query = new URLSearchParams();
 
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
-  if (params.searchTerm?.trim()) query.set("searchTerm", params.searchTerm.trim());
+  if (params.searchTerm?.trim())
+    query.set("searchTerm", params.searchTerm.trim());
   if (params.specialization && params.specialization !== "all") {
     query.set("specialization", params.specialization);
   }
@@ -32,29 +34,38 @@ export async function getDoctors(
     method: "GET",
     next: {
       tags: ["doctors"],
+      revalidate: 60 * 10,
     },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
 
-export async function getDoctorById(id: string): Promise<FetchResponse<IDoctor>> {
+export async function getDoctorById(
+  id: string,
+): Promise<FetchResponse<IDoctor>> {
   return nextFetch<IDoctor>(`/doctors/${id}`, {
     method: "GET",
     next: {
       tags: ["doctors", `doctor-${id}`],
+      revalidate: 60 * 10,
     },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
 
 export async function getDoctorPatients(
   doctorId: string,
-  params: { page?: number | string; limit?: number | string; searchTerm?: string } = {}
+  params: {
+    page?: number | string;
+    limit?: number | string;
+    searchTerm?: string;
+  } = {},
 ): Promise<FetchResponse<{ doctor: IDoctor; patients: IPatient[] }>> {
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
-  if (params.searchTerm?.trim()) query.set("searchTerm", params.searchTerm.trim());
+  if (params.searchTerm?.trim())
+    query.set("searchTerm", params.searchTerm.trim());
 
   const qs = query.toString();
   const endpoint = `/doctors/${doctorId}/patients${qs ? `?${qs}` : ""}`;
@@ -63,13 +74,14 @@ export async function getDoctorPatients(
     method: "GET",
     next: {
       tags: ["doctors", `doctor-${doctorId}-patients`],
+      revalidate: 60 * 10,
     },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
 
 export async function createDoctor(
-  payload: FormData | Record<string, any>
+  payload: FormData | Record<string, any>,
 ): Promise<FetchResponse<IDoctor>> {
   const res = await nextFetch<IDoctor>("/doctors", {
     method: "POST",
@@ -78,6 +90,8 @@ export async function createDoctor(
 
   if (res.success) {
     await revalidateTags(["doctors", "dashboard"]);
+    revalidatePath("/doctors");
+    revalidatePath("/dashboard");
   }
 
   return res;
@@ -85,7 +99,7 @@ export async function createDoctor(
 
 export async function updateDoctor(
   id: string,
-  payload: FormData | Record<string, any>
+  payload: FormData | Record<string, any>,
 ): Promise<FetchResponse<IDoctor>> {
   const res = await nextFetch<IDoctor>(`/doctors/${id}`, {
     method: "PATCH",
@@ -94,6 +108,9 @@ export async function updateDoctor(
 
   if (res.success) {
     await revalidateTags(["doctors", `doctor-${id}`, "dashboard"]);
+    revalidatePath(`/doctors/${id}`);
+    revalidatePath("/doctors");
+    revalidatePath("/dashboard");
   }
 
   return res;
@@ -106,6 +123,9 @@ export async function deleteDoctor(id: string): Promise<FetchResponse<any>> {
 
   if (res.success) {
     await revalidateTags(["doctors", "patients", "dashboard"]);
+    revalidatePath("/doctors");
+    revalidatePath("/patients");
+    revalidatePath("/dashboard");
   }
 
   return res;
@@ -113,7 +133,7 @@ export async function deleteDoctor(id: string): Promise<FetchResponse<any>> {
 
 export async function addPatientToDoctor(
   doctorId: string,
-  payload: FormData | Record<string, any>
+  payload: FormData | Record<string, any>,
 ): Promise<FetchResponse<IPatient>> {
   const res = await nextFetch<IPatient>(`/doctors/${doctorId}/patients`, {
     method: "POST",
@@ -127,6 +147,10 @@ export async function addPatientToDoctor(
       "patients",
       "dashboard",
     ]);
+    revalidatePath(`/doctors/${doctorId}`);
+    revalidatePath("/doctors");
+    revalidatePath("/patients");
+    revalidatePath("/dashboard");
   }
 
   return res;
@@ -134,7 +158,7 @@ export async function addPatientToDoctor(
 
 export async function removePatientFromDoctor(
   doctorId: string,
-  patientId: string
+  patientId: string,
 ): Promise<FetchResponse<any>> {
   const res = await nextFetch(`/doctors/${doctorId}/patients/${patientId}`, {
     method: "DELETE",
@@ -147,8 +171,11 @@ export async function removePatientFromDoctor(
       "patients",
       "dashboard",
     ]);
+    revalidatePath(`/doctors/${doctorId}`);
+    revalidatePath("/doctors");
+    revalidatePath("/patients");
+    revalidatePath("/dashboard");
   }
 
   return res;
 }
-

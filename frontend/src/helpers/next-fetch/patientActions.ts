@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { nextFetch, FetchResponse } from "./NextFetch";
 import { revalidateTags } from "./revalidateTags";
 import { IPatient, PatientQueryParams } from "@/types";
@@ -60,6 +61,8 @@ export async function createPatient(
 
   if (res.success) {
     await revalidateTags(["patients", "doctors", "dashboard"]);
+    revalidatePath("/patients");
+    revalidatePath("/dashboard");
   }
 
   return res;
@@ -76,6 +79,9 @@ export async function updatePatient(
 
   if (res.success) {
     await revalidateTags(["patients", `patient-${id}`, "dashboard"]);
+    revalidatePath(`/patients/${id}`);
+    revalidatePath("/patients");
+    revalidatePath("/dashboard");
   }
 
   return res;
@@ -88,6 +94,8 @@ export async function deletePatient(id: string): Promise<FetchResponse<any>> {
 
   if (res.success) {
     await revalidateTags(["patients", "doctors", "dashboard"]);
+    revalidatePath("/patients");
+    revalidatePath("/dashboard");
   }
 
   return res;

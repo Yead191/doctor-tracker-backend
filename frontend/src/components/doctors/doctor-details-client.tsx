@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -47,12 +47,21 @@ interface DoctorDetailsClientProps {
 }
 
 export function DoctorDetailsClient({
-  doctor,
+  doctor: initialDoctor,
   initialPatients,
 }: DoctorDetailsClientProps) {
   const router = useRouter();
 
+  const [doctor, setDoctor] = useState<IDoctor>(initialDoctor);
   const [patients, setPatients] = useState<IPatient[]>(initialPatients);
+
+  useEffect(() => {
+    setDoctor(initialDoctor);
+  }, [initialDoctor]);
+
+  useEffect(() => {
+    setPatients(initialPatients);
+  }, [initialPatients]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -630,6 +639,10 @@ export function DoctorDetailsClient({
           open={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           doctor={doctor}
+          onSuccess={(updated) => {
+            setDoctor(updated);
+            router.refresh();
+          }}
         />
       )}
 

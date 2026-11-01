@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -32,6 +33,7 @@ interface PatientFormModalProps {
   onClose: () => void;
   patient?: IPatient | null;
   doctors: IDoctor[];
+  onSuccess?: (updatedPatient: IPatient) => void;
 }
 
 export function PatientFormModal({
@@ -39,7 +41,9 @@ export function PatientFormModal({
   onClose,
   patient,
   doctors,
+  onSuccess,
 }: PatientFormModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -158,7 +162,11 @@ export function PatientFormModal({
             ? "Patient information updated"
             : "Patient record created successfully"
         );
+        if (onSuccess && res.data) {
+          onSuccess(res.data);
+        }
         onClose();
+        router.refresh();
       } else {
         toast.error(
           typeof res.error === "string"

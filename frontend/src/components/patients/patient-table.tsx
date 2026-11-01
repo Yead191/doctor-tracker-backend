@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Edit2,
   Trash2,
@@ -10,6 +11,7 @@ import {
   User,
   Stethoscope,
   Building2,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IDoctor, IPatient, Pagination } from "@/types";
@@ -136,9 +138,12 @@ export function PatientTable({
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 leading-tight">
+                          <Link
+                            href={`/patients/${patient._id}`}
+                            className="font-semibold text-slate-900 hover:text-teal-600 transition-colors leading-tight block"
+                          >
                             {patient.name}
-                          </p>
+                          </Link>
                           <p className="text-xs text-slate-400 mt-0.5">
                             {patient.age} yrs • {patient.gender}
                           </p>
@@ -213,6 +218,13 @@ export function PatientTable({
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/patients/${patient._id}`}
+                          title="View Patient Details"
+                          className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
                         <button
                           onClick={() => setEditingPatient(patient)}
                           title="Edit Patient"
@@ -253,9 +265,12 @@ export function PatientTable({
               <div key={patient._id} className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-semibold text-slate-900 leading-tight">
+                    <Link
+                      href={`/patients/${patient._id}`}
+                      className="font-semibold text-slate-900 hover:text-teal-600 transition-colors leading-tight block"
+                    >
                       {patient.name}
-                    </h4>
+                    </Link>
                     <p className="text-xs text-slate-500">
                       {patient.age} yrs • {patient.gender}
                     </p>
@@ -286,6 +301,11 @@ export function PatientTable({
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <Link href={`/patients/${patient._id}`}>
+                    <Button size="sm" variant="outline">
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View
+                    </Button>
+                  </Link>
                   <Button
                     size="sm"
                     variant="outline"
