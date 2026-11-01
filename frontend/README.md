@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Doctor Tracker — Frontend Web Portal
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.4-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-v4-cyan?logo=tailwindcss)](https://tailwindcss.com/)
+[![Recharts](https://img.shields.io/badge/Charts-Recharts-purple)](https://recharts.org/)
+
+Modern, clinical-grade administrative web application for Doctor Tracker. Built with Next.js 16 (App Router), React 19, and Tailwind CSS v4 to provide a responsive, high-performance experience for healthcare administrators.
+
+---
+
+## Features
+
+- **Administrative Dashboard:** Live ecosystem metrics (total practitioners, active patients, capacity ratios), dynamic Recharts data visualizations, and recent admission velocity feeds.
+- **Doctor Directory & Details:** Searchable, filterable doctor tables with pagination, specialization tags, and dedicated profile pages (`/doctors/[id]`) with patient roster management.
+- **Patient Roster & Clinical Profiles:** Comprehensive patient management (`/patients/[id]`) with real-time condition switches, attending physician linkage, inline clinical notes editor, and contact cards.
+- **Instant Server-Side Revalidation:** Leverages Next.js 16 Server Actions and `revalidatePath` to synchronize data across screens without manual browser reloads.
+- **Shimmer Skeletons:** Animated pulse skeletons on all route transitions (`loading.tsx`) to eliminate layout shift.
+- **Custom Modals:** Branded, accessible `DeleteConfirmModal` replacing browser alerts for high-risk actions.
+- **Responsive Architecture:** Pinned desktop sidebar with independent scrollable main content, mobile drawer navigation, and accessible forms.
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js 16.4 (App Router)
+- **Library:** React 19
+- **Styling:** Tailwind CSS v4 & PostCSS
+- **Visualizations:** Recharts 3.10
+- **Icons:** Lucide React
+- **Notifications:** Sonner
+- **Forms & Validation:** React Hook Form & Zod
+
+---
 
 ## Getting Started
 
-First, run the development server:
-
+### 1. Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Configuration
+Create a `.env.local` file from `.env.example`:
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Environment Variables (`.env.example`):**
+```env
+BASE_URL=http://localhost:5000/api/v1
+NEXT_PUBLIC_BASE_URL=http://localhost:5000/api/v1
+NEXT_PUBLIC_SERVER_URL=http://localhost:5000
+```
+*(For production, update the URLs to point to your live backend API).*
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Open `http://localhost:3000` in your browser.
 
-## Learn More
+### 4. Build for Production
+```bash
+npm run build
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Component Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+frontend/src/
+├── app/
+│   ├── (auth)/login/             # Dedicated authentication route
+│   └── (dashboard)/              # Protected administrative layout
+│       ├── dashboard/            # Analytics dashboard & loading.tsx
+│       ├── doctors/              # Doctor directory, loading.tsx & [id]/
+│       └── patients/             # Patient directory, loading.tsx & [id]/
+├── components/
+│   ├── dashboard/                # Metric cards, activity feed, charts
+│   ├── doctors/                  # Doctor table, details client, forms
+│   ├── patients/                 # Patient table, details client & subcomponents:
+│   │   └── details/              # Action bar, hero, stats, contact, notes
+│   ├── layout/                   # Pinned sidebar & header navigation
+│   └── ui/                       # Reusable buttons, badges, modals, skeletons
+├── helpers/next-fetch/           # Server actions & REST API integration
+└── types/                        # TypeScript domain interfaces
+```

@@ -1,155 +1,113 @@
-# Simple Backend Tamplate
+# Doctor Tracker — Backend API Server
 
-This is a template project for backend development using Typescript, Node.js, Express, Mongoose, Bcrypt, JWT, NodeMailer, Multer, ESLint, and Prettier. The aim is to reduce setup time for new backend projects.
+[![Express.js](https://img.shields.io/badge/Express.js-4.19-green?logo=express)](https://expressjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%208-emerald?logo=mongodb)](https://www.mongodb.com/)
+[![JWT](https://img.shields.io/badge/Auth-JWT%20%2B%20Bcrypt-orange)](https://jwt.io/)
+
+Dedicated, high-performance RESTful API server for the Doctor Tracker healthcare administrative management portal.
+
+---
 
 ## Features
 
-- **Authentication API:** Complete authentication system using JWT for secure token-based authentication and bcrypt for password hashing.
-- **File Upload:** Implemented using Multer with efficient file handling and short-term storage.
-- **Data Validation:** Robust data validation using Zod and Mongoose schemas.
-- **Code Quality:** Ensured code readability and quality with ESLint and Prettier.
-- **Email Service:** Sending emails through NodeMailer.
-- **File Handling:** Efficient file deletion using `fs.unlink`.
-- **Environment Configuration:** Easy configuration using a `.env` file.
-- **Logging:** Logging with Winston and file rotation using DailyRotateFile.
-- **API Request Logging:** Logging API requests using Morgan.
+- **Authentication & Authorization:** Secure JWT-based authentication with bcrypt password hashing and role-based access control (`SUPER_ADMIN`, `ADMIN`, `USER`).
+- **Doctor Management:** Full CRUD operations for medical practitioners, specialization tracking, and patient roster assignments.
+- **Patient Management:** Comprehensive patient lifecycle records, medical condition tracking, attending doctor linkage, and clinical notes.
+- **Data Analytics & Aggregation:** High-performance MongoDB aggregation pipelines for instant dashboard statistics, condition distributions, and admission timelines.
+- **QueryBuilder Engine:** Standardized multi-field searching, sorting, pagination, and date-range filtering with compound indexing.
+- **File Handling:** Multipart form-data handling via Multer with file streaming.
+- **Security & Reliability:** IP-based rate limiting, input validation via Zod schemas, Winston structured logging, and centralized error handling.
+- **Vercel Serverless Ready:** Pre-configured with `vercel.json` and `api/index.ts` for deployment on Vercel or traditional persistent Node.js servers (Docker / Render / Railway).
+
+---
 
 ## Tech Stack
 
-- Typescript
-- Node.js
-- Express
-- Mongoose
-- Bcrypt
-- JWT
-- NodeMailer
-- Multer
-- ESLint
-- Prettier
-- Winston
-- Daily-winston-rotate-file
-- Morgen
-- Socket
+- **Runtime:** Node.js (v18+)
+- **Framework:** Express.js 4.19
+- **Language:** TypeScript 5.5
+- **Database:** MongoDB via Mongoose 8
+- **Validation:** Zod schemas
+- **Logging:** Winston & Morgan
+- **Security:** Cors, Bcrypt, Express Rate Limit, JWT
+
+---
 
 ## Getting Started
 
-Follow these steps to set up and run the project locally.
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-- Node.js
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/yourusername/your-repository.git
-   cd your-repository
-   ```
-
-2. **Install dependencies:**
-
-   Using npm:
-
-   ```bash
-   npm install
-   ```
-
-   Using yarn:
-
-   ```bash
-   yarn install
-   ```
-
-3. **For using the Docker services:**
-
-   First of all configure the docker-compose.app.yaml then run this code:
-
-   ```bash
-   npm run docker-infra
-   ```
-4. **If you want to use the Contraise server:**
-
-   For the automatic load balancer, start running this command:
-
-   ```bash
-   npm run init-load
-   ```
-5. **Then start the server using command:**
-
-   ```bash
-   npm run docker-app
-   ```
-
-6. **Create a `.env` file:**
-
-   In the root directory of the project, create a `.env` file and add the following variables. Adjust the values according to your setup.
-
-   ```env
-   # Basic
-   NODE_ENV=production
-   DATABASE_URL=mongodb://mongo:27017/demo_db
-   BACKUP_DATABASE_URL=mongodb://mongo:27017/demo_db
-   IP_ADDRESS=0.0.0.0
-   PORT=5000
-
-   # Redis
-   REDIS_HOST=redis
-   REDIS_PORT=6379
-
-   # Kafka
-   KAFKA_URL=kafka:9092
-
-   # Elasticsearch
-   ELASTICSEARCH_URL=http://elasticsearch:9200
-
-   # Bcrypt
-   BCRYPT_SALT_ROUNDS=10
-
-   # JWT
-   JWT_SECRET=demo_jwt_secret_key
-   JWT_EXPIRE_IN=30d
-
-   # Email (Demo only)
-   EMAIL_FROM=demo@example.com
-   EMAIL_USER=demo@example.com
-   EMAIL_PASS=demo-email-password
-   EMAIL_PORT=587
-   EMAIL_HOST=smtp.gmail.com
-
-   # Super Admin (Demo)
-   SUPER_ADMIN_EMAIL=admin@example.com
-   SUPER_ADMIN_PASSWORD=Admin@123
-
-   # Stripe (Demo)
-   STRIPE_API_SECRET=sk_test_demo123456789
-   WEBHOOK_SECRET=whsec_demo123456789
-
-
-   ```
-
-7. **Run the project:**
-
-   Using npm:
-
-   ```bash
-   npm run dev
-   ```
-
-   Using yarn:
-
-   ```bash
-   yarn run dev
-   ```
-
-### Running the Tests
-
-Explain how to run the automated tests for this system.
-
+### 1. Installation
 ```bash
-npm test
+npm install
 ```
+
+### 2. Environment Configuration
+Create a `.env` file from `.env.example`:
+```bash
+cp .env.example .env
+```
+
+**Environment Variables:**
+```env
+# Basic Configuration
+NODE_ENV=development
+DATABASE_URL=mongodb+srv://<username>:<password>@cluster0.pjwkg.mongodb.net/doctorTrackerDB?retryWrites=true&w=majority
+IP_ADDRESS=0.0.0.0
+PORT=5000
+PROJECT_NAME="Doctor Tracker Backend"
+
+# Security & Encryption
+BCRYPT_SALT_ROUNDS=12
+JWT_SECRET=doctor_tracker_super_secure_jwt_secret_key_2026
+JWT_EXPIRE_IN=30d
+
+# Initial Super Admin Credentials
+SUPER_ADMIN_EMAIL=admin@doctortracker.com
+SUPER_ADMIN_PASSWORD=Admin@123456
+```
+
+### 3. Run Development Server
+```bash
+npm run dev
+```
+*The server will start on `http://localhost:5000`. On first start, it automatically connects to MongoDB, seeds the initial super admin account, and inserts sample doctor & patient records.*
+
+### 4. Build for Production
+```bash
+npm run build
+npm start
+```
+
+---
+
+## REST API Endpoints Overview
+
+All routes are prefixed with `/api/v1`:
+
+| Module | Method | Endpoint | Description |
+|---|---|---|---|
+| **Auth** | `POST` | `/api/v1/auth/login` | Super admin and staff login |
+| **Auth** | `POST` | `/api/v1/auth/refresh-token` | Renew expired JWT token |
+| **Doctors** | `GET` | `/api/v1/doctors` | Paginated doctors list with filters |
+| **Doctors** | `GET` | `/api/v1/doctors/:id` | Doctor profile with assigned patients |
+| **Doctors** | `POST` | `/api/v1/doctors` | Create doctor (with optional photo) |
+| **Doctors** | `PATCH` | `/api/v1/doctors/:id` | Update doctor details |
+| **Doctors** | `DELETE` | `/api/v1/doctors/:id` | Remove doctor record |
+| **Doctors** | `POST` | `/api/v1/doctors/:id/assign-patient` | Assign patient to doctor |
+| **Doctors** | `DELETE` | `/api/v1/doctors/:id/remove-patient/:patientId` | Unassign patient from doctor |
+| **Patients** | `GET` | `/api/v1/patients` | Paginated patient roster with filters |
+| **Patients** | `GET` | `/api/v1/patients/:id` | Patient details and clinical notes |
+| **Patients** | `POST` | `/api/v1/patients` | Register new patient |
+| **Patients** | `PATCH` | `/api/v1/patients/:id` | Update patient records & condition |
+| **Patients** | `DELETE` | `/api/v1/patients/:id` | Delete patient record |
+| **Dashboard**| `GET` | `/api/v1/dashboard/stats` | Aggregated metrics for charts |
+
+---
+
+## Serverless Deployment on Vercel
+
+The backend includes native Vercel serverless support:
+1. `vercel.json` configures the routing to `@vercel/node`.
+2. `api/index.ts` handles serverless database connection caching and request dispatching.
+3. In MongoDB Atlas, ensure **Network Access** allows `0.0.0.0/0`.
+4. On Vercel, set the **Root Directory** to `backend`, supply your environment variables, and deploy.
