@@ -1,0 +1,93 @@
+import cors from 'cors';
+import express, { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import router from './routes';
+import { Morgan } from './shared/morgen';
+import rateLimit from 'express-rate-limit';
+import ApiError from './errors/ApiError';
+import session from 'express-session';
+import requestIp from 'request-ip';
+import { handleChunkUpload } from './helpers/handleChunkUpload';
+import { fileStreamHandler } from './helpers/fileStreamingHelper';
+
+const app = express();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    if (!req.clientIp) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Unable to determine client IP!');
+    }
+    return req.clientIp;
+  },
+  handler: (req, res, next, options) => {
+    throw new ApiError(options?.statusCode, `Rate limit exceeded. Try again in ${options.windowMs / 60000} minutes.`);
+  },
+});
+
+app.use(
+  session({
+    secret: 'doctor_tracker_session_secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
+app.use(requestIp.mw());
+app.use(limiter);
+
+// Morgan logger
+app.use(Morgan.successHandler);
+app.use(Morgan.errorHandler);
+
+// Body parser & CORS
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// File streaming
+app.use('/files/:folder/:file', fileStreamHandler);
+
+// Chunk upload
+app.post('/api/v1/upload/chunk', handleChunkUpload);
+
+// API router
+app.use('/api/v1', router);
+
+// Live response / Health check
+app.get('/', (req: Request, res: Response) => {
+  const date = new Date(Date.now());
+  if (global.socketServer) {
+    global.socketServer.emit('message', 'Doctor Tracker server is active!');
+  }
+  res.send(`
+    <div style="text-align:center; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      <h1 style="color: #0284c7;">Doctor Tracker API Server</h1>
+      <p style="color: #16a34a; font-weight: bold;">Status: Alive and Running</p>
+      <p style="color: #64748b;">Current Time: ${date.toLocaleString()}</p>
+    </div>
+  `);
+});
+
+// Global error handler
+app.use(globalErrorHandler);
+
+// Handle not found routes
+app.use((req, res) => {
+  res.status(StatusCodes.NOT_FOUND).json({
+    success: false,
+    message: 'Not found',
+    errorMessages: [
+      {
+        path: req.originalUrl,
+        message: "API DOESN'T EXIST",
+      },
+    ],
+  });
+});
+
+export default app;
