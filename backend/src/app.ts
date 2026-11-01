@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './routes';
@@ -10,6 +10,10 @@ import session from 'express-session';
 import requestIp from 'request-ip';
 import { handleChunkUpload } from './helpers/handleChunkUpload';
 import { fileStreamHandler } from './helpers/fileStreamingHelper';
+import mongoose from 'mongoose';
+import config from './config';
+import { seedSuperAdmin } from './DB/seedAdmin';
+import { seedSampleData } from './DB/seedData';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -57,6 +61,33 @@ app.use('/files/:folder/:file', fileStreamHandler);
 
 // Chunk upload
 app.post('/api/v1/upload/chunk', handleChunkUpload);
+
+// Ensure DB connection in Serverless environments
+let isSeeded = false;
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  if (mongoose.connection.readyState >= 1) {
+    return next();
+  }
+  try {
+    const dbUrl = process.env.DATABASE_URL || config.database_url;
+    if (dbUrl) {
+      await mongoose.connect(dbUrl as string, { serverSelectionTimeoutMS: 8000 });
+      if (!isSeeded) {
+        isSeeded = true;
+        seedSuperAdmin().catch(() => {});
+        seedSampleData().catch(() => {});
+      }
+    }
+    next();
+  } catch (err: any) {
+    console.error('Database connection error in Serverless:', err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Database connection failed. Please verify DATABASE_URL and MongoDB Atlas Network Access (0.0.0.0/0).',
+      error: err?.message || String(err),
+    });
+  }
+});
 
 // API router
 app.use('/api/v1', router);

@@ -56,7 +56,11 @@ export const nextFetch = async <T = any>(
     ...(token ? { Authorization: `${token}` } : {}),
   };
 
-  const baseUrl = process.env.BASE_URL || "http://localhost:5000/api/v1";
+  const rawBaseUrl =
+    process.env.BASE_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    "http://localhost:5000/api/v1";
+  const baseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
 
   try {
     const res = await fetch(`${baseUrl}${url}`, {
