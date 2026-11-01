@@ -18,6 +18,8 @@ import { SpecializationChart } from "@/components/dashboard/specialization-chart
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import Image from "next/image";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 export const metadata = {
   title: "Dashboard — Doctor Tracker",
@@ -198,7 +200,17 @@ export default async function DashboardPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-full bg-slate-100 text-teal-700 font-bold flex items-center justify-center text-xs shrink-0">
-                      {doc.name.replace(/^Dr\.\s*/i, "").charAt(0)}
+                      {doc.image ? (
+                        <Image
+                          src={getImageUrl(doc.image) || ""}
+                          alt={doc.name}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        doc.name.charAt(0)
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-slate-900">
@@ -214,7 +226,9 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant={doc.status === "active" ? "success" : "neutral"}>
+                  <Badge
+                    variant={doc.status === "active" ? "success" : "neutral"}
+                  >
                     {doc.status}
                   </Badge>
                 </div>
@@ -250,7 +264,17 @@ export default async function DashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-full bg-teal-50 text-teal-800 font-bold flex items-center justify-center text-xs shrink-0">
-                        {patient.name.charAt(0)}
+                        {patient.image ? (
+                          <Image
+                            src={getImageUrl(patient.image) || ""}
+                            alt={patient.name}
+                            width={24}
+                            height={24}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          patient.name.charAt(0)
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-900">
@@ -271,8 +295,8 @@ export default async function DashboardPage() {
                           patient.status === "critical"
                             ? "danger"
                             : patient.status === "recovered"
-                            ? "success"
-                            : "info"
+                              ? "success"
+                              : "info"
                         }
                       >
                         {patient.status}
