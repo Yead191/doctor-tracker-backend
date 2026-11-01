@@ -37,6 +37,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { DoctorFormModal } from "@/components/doctors/doctor-form-modal";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { getImageUrl } from "@/lib/getImageUrl";
+import Image from "next/image";
 
 interface DoctorDetailsClientProps {
   doctor: IDoctor;
@@ -57,8 +60,13 @@ export function DoctorDetailsClient({
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddPatientModalOpen, setIsAddPatientModalOpen] = useState(false);
+  const [isDeleteDoctorModalOpen, setIsDeleteDoctorModalOpen] = useState(false);
   const [deletingDoctor, setDeletingDoctor] = useState(false);
-  const [removingPatientId, setRemovingPatientId] = useState<string | null>(null);
+  const [removingPatient, setRemovingPatient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isRemovingPatient, setIsRemovingPatient] = useState(false);
 
   // New patient state
   const [patientName, setPatientName] = useState("");
@@ -81,16 +89,12 @@ export function DoctorDetailsClient({
 
   // Delete doctor
   const handleDeleteDoctor = async () => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${doctor.name}? This will also delete their assigned records.`
-    );
-    if (!confirmed) return;
-
     setDeletingDoctor(true);
     try {
       const res = await deleteDoctor(doctor._id);
       if (res.success) {
         toast.success("Doctor deleted successfully");
+        setIsDeleteDoctorModalOpen(false);
         router.push("/doctors");
         router.refresh();
       } else {
@@ -144,18 +148,16 @@ export function DoctorDetailsClient({
   };
 
   // Remove patient
-  const handleRemovePatient = async (patientId: string, patientName: string) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to remove ${patientName} from Dr. ${doctor.name}?`
-    );
-    if (!confirmed) return;
+  const handleRemovePatientConfirm = async () => {
+    if (!removingPatient) return;
 
-    setRemovingPatientId(patientId);
+    setIsRemovingPatient(true);
     try {
-      const res = await removePatientFromDoctor(doctor._id, patientId);
+      const res = await removePatientFromDoctor(doctor._id, removingPatient.id);
       if (res.success) {
         toast.success("Patient removed successfully");
-        setPatients((prev) => prev.filter((p) => p._id !== patientId));
+        setPatients((prev) => prev.filter((p) => p._id !== removingPatient.id));
+        setRemovingPatient(null);
         router.refresh();
       } else {
         toast.error(res.message || "Failed to remove patient");
@@ -163,7 +165,7 @@ export function DoctorDetailsClient({
     } catch {
       toast.error("Failed to remove patient");
     } finally {
-      setRemovingPatientId(null);
+      setIsRemovingPatient(false);
     }
   };
 
@@ -178,11 +180,7 @@ export function DoctorDetailsClient({
     return matchesSearch && matchesStatus;
   });
 
-  const imgUrl = doctor.image
-    ? doctor.image.startsWith("http")
-      ? doctor.image
-      : `http://localhost:5000/files${doctor.image}`
-    : null;
+  const imgUrl = getImageUrl(doctor.image);
 
   return (
     <div className="p-4 sm:p-8 space-y-6 max-w-7xl mx-auto w-full">
@@ -227,8 +225,7 @@ export function DoctorDetailsClient({
           <Button
             variant="danger"
             size="sm"
-            onClick={handleDeleteDoctor}
-            disabled={deletingDoctor}
+            onClick={() => setIsDeleteDoctorModalOpen(true)}
             className="gap-1.5"
           >
             <Trash2 className="h-4 w-4" />
@@ -247,12 +244,14 @@ export function DoctorDetailsClient({
           <div className="flex flex-col md:flex-row md:items-center gap-6 relative z-10">
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-teal-800 text-teal-100 border-2 border-teal-400/30 font-bold flex items-center justify-center text-3xl shadow-xl overflow-hidden">
+              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-teal-800 text-teal-100 border-2 border-teal-400/30 font-bold flex items-center justify-center text-3xl shadow-xl overflow-hidden relative">
                 {imgUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={imgUrl}
                     alt={doctor.name}
+                    height={150}
+                    width={150}
+                    unoptimized
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -605,11 +604,13 @@ export function DoctorDetailsClient({
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() =>
-                            handleRemovePatient(patient._id, patient.name)
+                            setRemovingPatient({
+                              id: patient._id,
+                              name: patient.name,
+                            })
                           }
-                          disabled={removingPatientId === patient._id}
                           title="Remove from this doctor"
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -753,6 +754,48 @@ export function DoctorDetailsClient({
           </div>
         </form>
       </Modal>
+
+      {/* Delete Doctor Confirmation Modal */}
+      <DeleteConfirmModal
+        open={isDeleteDoctorModalOpen}
+        onClose={() => setIsDeleteDoctorModalOpen(false)}
+        onConfirm={handleDeleteDoctor}
+        title="Delete Doctor Profile"
+        itemName={doctor.name}
+        itemType="doctor"
+        isLoading={deletingDoctor}
+        description={
+          <p>
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
+              {doctor.name}
+            </span>
+            ? This action cannot be undone and will permanently remove this doctor and their assigned records.
+          </p>
+        }
+      />
+
+      {/* Remove Patient Confirmation Modal */}
+      <DeleteConfirmModal
+        open={Boolean(removingPatient)}
+        onClose={() => setRemovingPatient(null)}
+        onConfirm={handleRemovePatientConfirm}
+        title="Remove Patient Assignment"
+        itemName={removingPatient?.name}
+        itemType="patient"
+        confirmText="Remove"
+        variant="warning"
+        isLoading={isRemovingPatient}
+        description={
+          <p>
+            Are you sure you want to remove{" "}
+            <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
+              {removingPatient?.name}
+            </span>{" "}
+            from Dr. {doctor.name}&apos;s care?
+          </p>
+        }
+      />
     </div>
   );
 }

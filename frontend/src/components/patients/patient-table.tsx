@@ -18,6 +18,9 @@ import { PatientFormModal } from "./patient-form-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { getImageUrl } from "@/lib/getImageUrl";
+import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 
 interface PatientTableProps {
@@ -32,21 +35,27 @@ export function PatientTable({
   pagination,
 }: PatientTableProps) {
   const [editingPatient, setEditingPatient] = useState<IPatient | null>(null);
+  const [deletingPatient, setDeletingPatient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete patient "${name}"?`)) {
-      return;
-    }
-
+  const handleDeleteConfirm = async () => {
+    if (!deletingPatient) return;
+    setIsDeleting(true);
     try {
-      const res = await deletePatient(id);
+      const res = await deletePatient(deletingPatient.id);
       if (res.success) {
-        toast.success(`Patient "${name}" deleted successfully`);
+        toast.success(`Patient "${deletingPatient.name}" deleted successfully`);
+        setDeletingPatient(null);
       } else {
         toast.error(res.message || "Failed to delete patient");
       }
     } catch {
       toast.error("Failed to delete patient");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -97,11 +106,7 @@ export function PatientTable({
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {patients.map((patient) => {
-                const imgUrl = patient.image
-                  ? patient.image.startsWith("http")
-                    ? patient.image
-                    : `http://localhost:5000/files${patient.image}`
-                  : null;
+                const imgUrl = getImageUrl(patient.image);
 
                 const docObj =
                   typeof patient.doctor === "object" && patient.doctor !== null
@@ -118,10 +123,12 @@ export function PatientTable({
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-teal-50 text-teal-800 border border-teal-100 font-bold flex items-center justify-center shrink-0 overflow-hidden text-sm">
                           {imgUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <Image
                               src={imgUrl}
                               alt={patient.name}
+                              height={100}
+                              width={100}
+                              unoptimized
                               className="h-full w-full object-cover"
                             />
                           ) : (
@@ -215,7 +222,10 @@ export function PatientTable({
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(patient._id, patient.name)
+                            setDeletingPatient({
+                              id: patient._id,
+                              name: patient.name,
+                            })
                           }
                           title="Delete Patient"
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
@@ -286,7 +296,12 @@ export function PatientTable({
                   <Button
                     size="sm"
                     variant="danger"
-                    onClick={() => handleDelete(patient._id, patient.name)}
+                    onClick={() =>
+                      setDeletingPatient({
+                        id: patient._id,
+                        name: patient.name,
+                      })
+                    }
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -306,6 +321,26 @@ export function PatientTable({
         onClose={() => setEditingPatient(null)}
         patient={editingPatient}
         doctors={doctors}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        open={Boolean(deletingPatient)}
+        onClose={() => setDeletingPatient(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Patient Record"
+        itemName={deletingPatient?.name}
+        itemType="patient"
+        isLoading={isDeleting}
+        description={
+          <p>
+            Are you sure you want to delete patient{" "}
+            <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
+              {deletingPatient?.name}
+            </span>
+            ? This action cannot be undone and will permanently remove this patient from the directory.
+          </p>
+        }
       />
     </>
   );

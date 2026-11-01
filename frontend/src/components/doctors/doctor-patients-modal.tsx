@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
 import { formatDate } from "@/lib/utils";
 
 interface DoctorPatientsModalProps {
@@ -29,6 +30,11 @@ export function DoctorPatientsModal({
   const [patients, setPatients] = useState<IPatient[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [removingPatient, setRemovingPatient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   // New patient form state
   const [newName, setNewName] = useState("");
@@ -102,26 +108,23 @@ export function DoctorPatientsModal({
     }
   };
 
-  const handleRemovePatient = async (patientId: string, patientName: string) => {
-    if (!doctor) return;
-    if (
-      !confirm(
-        `Are you sure you want to remove patient "${patientName}" from ${doctor.name}'s list?`
-      )
-    ) {
-      return;
-    }
+  const handleRemovePatientConfirm = async () => {
+    if (!doctor || !removingPatient) return;
 
+    setIsRemoving(true);
     try {
-      const res = await removePatientFromDoctor(doctor._id, patientId);
+      const res = await removePatientFromDoctor(doctor._id, removingPatient.id);
       if (res.success) {
         toast.success("Patient removed from doctor's list");
+        setRemovingPatient(null);
         fetchPatients();
       } else {
         toast.error(res.message || "Failed to remove patient");
       }
     } catch {
       toast.error("Failed to remove patient");
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -343,7 +346,10 @@ export function DoctorPatientsModal({
                   </Badge>
                   <button
                     onClick={() =>
-                      handleRemovePatient(patient._id, patient.name)
+                      setRemovingPatient({
+                        id: patient._id,
+                        name: patient.name,
+                      })
                     }
                     title="Remove from doctor"
                     className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
@@ -356,6 +362,28 @@ export function DoctorPatientsModal({
           </div>
         )}
       </div>
+
+      {/* Remove Patient Confirmation Modal */}
+      <DeleteConfirmModal
+        open={Boolean(removingPatient)}
+        onClose={() => setRemovingPatient(null)}
+        onConfirm={handleRemovePatientConfirm}
+        title="Remove Patient Assignment"
+        itemName={removingPatient?.name}
+        itemType="patient"
+        confirmText="Remove"
+        variant="warning"
+        isLoading={isRemoving}
+        description={
+          <p>
+            Are you sure you want to remove{" "}
+            <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
+              {removingPatient?.name}
+            </span>{" "}
+            from {doctor.name}&apos;s patient list?
+          </p>
+        }
+      />
     </Modal>
   );
 }
