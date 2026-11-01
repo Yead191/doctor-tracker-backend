@@ -48,7 +48,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 min-h-screen text-slate-200">
+    <aside className="w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 text-slate-200 select-none">
       {/* Brand Header */}
       <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800/80">
         <div className="h-9 w-9 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center ring-1 ring-teal-500/30">
@@ -65,7 +65,7 @@ export function Sidebar() {
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 px-3 py-6 space-y-1.5">
+      <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto">
         <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
           Management
         </div>

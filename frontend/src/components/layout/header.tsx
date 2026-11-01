@@ -36,7 +36,7 @@ export function Header({ title, description, action }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3.5 transition-all">
+      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3.5 transition-all">
         <div className="flex items-center justify-between gap-4">
           {/* Mobile hamburger & brand */}
           <div className="flex items-center gap-3 lg:hidden">

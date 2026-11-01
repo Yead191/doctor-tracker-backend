@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Users,
   Edit2,
@@ -10,6 +11,7 @@ import {
   Building2,
   Calendar,
   UserCheck,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IDoctor, Pagination } from "@/types";
@@ -113,9 +115,12 @@ export function DoctorTable({ doctors, pagination }: DoctorTableProps) {
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 leading-tight">
+                          <Link
+                            href={`/doctors/${doctor._id}`}
+                            className="font-semibold text-slate-900 hover:text-teal-600 transition-colors leading-tight block"
+                          >
                             {doctor.name}
-                          </p>
+                          </Link>
                           <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             Joined {formatDate(doctor.createdAt)}
@@ -186,6 +191,13 @@ export function DoctorTable({ doctors, pagination }: DoctorTableProps) {
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/doctors/${doctor._id}`}
+                          title="View Doctor Details"
+                          className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
                         <button
                           onClick={() => setEditingDoctor(doctor)}
                           title="Edit Doctor"
@@ -253,7 +265,12 @@ export function DoctorTable({ doctors, pagination }: DoctorTableProps) {
                   {doctor.patientCount || 0} Patients
                 </button>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <Link href={`/doctors/${doctor._id}`}>
+                    <Button size="sm" variant="outline">
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View
+                    </Button>
+                  </Link>
                   <Button
                     size="sm"
                     variant="outline"
