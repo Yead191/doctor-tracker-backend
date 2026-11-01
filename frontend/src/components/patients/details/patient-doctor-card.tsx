@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { IDoctor } from "@/types";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 interface PatientDoctorCardProps {
   doctor?: IDoctor | null;
@@ -27,7 +29,7 @@ export function PatientDoctorCard({
   return (
     <div className="lg:col-span-1 bg-gradient-to-b from-teal-50/50 to-white rounded-2xl border border-teal-200/80 p-5 shadow-2xs space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
+        <span className="text-xs font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5 ">
           <Stethoscope className="h-4 w-4 text-teal-600" />
           Attending Physician
         </span>
@@ -46,7 +48,17 @@ export function PatientDoctorCard({
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-teal-600 text-white font-bold flex items-center justify-center text-base shrink-0 shadow-sm">
-              {doctor.name.replace(/^Dr\.\s*/i, "").charAt(0)}
+              {doctor?.image ? (
+                <Image
+                  src={getImageUrl(doctor.image) || ""}
+                  height={48}
+                  width={48}
+                  alt={doctor.name}
+                  className="h-full w-full rounded-xl"
+                />
+              ) : (
+                doctor.name.replace(/^Dr\.\s*/i, "").charAt(0)
+              )}
             </div>
             <div>
               <Link
@@ -107,7 +119,9 @@ export function PatientDoctorCard({
       ) : (
         <div className="text-center py-6 text-slate-500 space-y-2">
           <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
-          <p className="text-xs">No doctor currently attached to this patient.</p>
+          <p className="text-xs">
+            No doctor currently attached to this patient.
+          </p>
           <Button
             variant="primary"
             size="sm"
@@ -121,4 +135,3 @@ export function PatientDoctorCard({
     </div>
   );
 }
-

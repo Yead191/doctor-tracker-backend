@@ -10,8 +10,8 @@ export async function getDashboardAnalytics(): Promise<
     method: "GET",
     next: {
       tags: ["dashboard"],
+      revalidate: 60 * 30,
     },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
-

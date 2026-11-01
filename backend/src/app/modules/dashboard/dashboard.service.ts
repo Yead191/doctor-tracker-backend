@@ -107,7 +107,7 @@ const getDashboardAnalyticsFromDB = async () => {
 
     // Recent 5 Patients with populated Doctor info
     Patient.find()
-      .populate('doctor', 'name specialization hospital')
+      .populate('doctor', 'name specialization hospital image')
       .sort({ createdAt: -1 })
       .limit(5),
 
@@ -137,7 +137,10 @@ const getDashboardAnalyticsFromDB = async () => {
   ]);
 
   // Merge date-based stats for charts
-  const dateMap = new Map<string, { date: string; patients: number; doctors: number }>();
+  const dateMap = new Map<
+    string,
+    { date: string; patients: number; doctors: number }
+  >();
 
   patientDateStats.forEach(item => {
     dateMap.set(item._id, {
@@ -160,7 +163,7 @@ const getDashboardAnalyticsFromDB = async () => {
   });
 
   const dateBasedStats = Array.from(dateMap.values()).sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
   return {
@@ -180,4 +183,3 @@ const getDashboardAnalyticsFromDB = async () => {
 export const DashboardService = {
   getDashboardAnalyticsFromDB,
 };
-

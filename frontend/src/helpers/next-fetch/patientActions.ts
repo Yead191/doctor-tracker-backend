@@ -6,13 +6,14 @@ import { revalidateTags } from "./revalidateTags";
 import { IPatient, PatientQueryParams } from "@/types";
 
 export async function getPatients(
-  params: PatientQueryParams = {}
+  params: PatientQueryParams = {},
 ): Promise<FetchResponse<IPatient[]>> {
   const query = new URLSearchParams();
 
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
-  if (params.searchTerm?.trim()) query.set("searchTerm", params.searchTerm.trim());
+  if (params.searchTerm?.trim())
+    query.set("searchTerm", params.searchTerm.trim());
   if (params.condition && params.condition !== "all") {
     query.set("condition", params.condition);
   }
@@ -36,23 +37,27 @@ export async function getPatients(
     method: "GET",
     next: {
       tags: ["patients"],
+      revalidate: 60 * 10,
     },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
 
-export async function getPatientById(id: string): Promise<FetchResponse<IPatient>> {
+export async function getPatientById(
+  id: string,
+): Promise<FetchResponse<IPatient>> {
   return nextFetch<IPatient>(`/patients/${id}`, {
     method: "GET",
     next: {
       tags: ["patients", `patient-${id}`],
+      revalidate: 60 * 10,
     },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
 
 export async function createPatient(
-  payload: FormData | Record<string, any>
+  payload: FormData | Record<string, any>,
 ): Promise<FetchResponse<IPatient>> {
   const res = await nextFetch<IPatient>("/patients", {
     method: "POST",
@@ -70,7 +75,7 @@ export async function createPatient(
 
 export async function updatePatient(
   id: string,
-  payload: FormData | Record<string, any>
+  payload: FormData | Record<string, any>,
 ): Promise<FetchResponse<IPatient>> {
   const res = await nextFetch<IPatient>(`/patients/${id}`, {
     method: "PATCH",
@@ -100,4 +105,3 @@ export async function deletePatient(id: string): Promise<FetchResponse<any>> {
 
   return res;
 }
-

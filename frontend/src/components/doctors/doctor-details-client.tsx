@@ -80,7 +80,9 @@ export function DoctorDetailsClient({
   // New patient state
   const [patientName, setPatientName] = useState("");
   const [patientAge, setPatientAge] = useState("");
-  const [patientGender, setPatientGender] = useState<"male" | "female" | "other">("male");
+  const [patientGender, setPatientGender] = useState<
+    "male" | "female" | "other"
+  >("male");
   const [patientPhone, setPatientPhone] = useState("");
   const [patientCondition, setPatientCondition] = useState("");
   const [patientStatus, setPatientStatus] = useState<
@@ -119,7 +121,12 @@ export function DoctorDetailsClient({
   // Add patient directly under doctor
   const handleAddPatient = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientName.trim() || !patientAge || !patientPhone.trim() || !patientCondition.trim()) {
+    if (
+      !patientName.trim() ||
+      !patientAge ||
+      !patientPhone.trim() ||
+      !patientCondition.trim()
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -292,7 +299,9 @@ export function DoctorDetailsClient({
               <p className="text-teal-400 font-medium text-base flex items-center gap-2">
                 <span>{doctor.specialization}</span>
                 <span className="text-slate-400">•</span>
-                <span className="text-slate-300 font-normal">{doctor.hospital}</span>
+                <span className="text-slate-300 font-normal">
+                  {doctor.hospital}
+                </span>
               </p>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 pt-1">
@@ -323,7 +332,9 @@ export function DoctorDetailsClient({
               <span className="text-2xl font-bold text-slate-900">
                 {patients.length}
               </span>
-              <span className="text-xs text-teal-600 font-medium">Under Care</span>
+              <span className="text-xs text-teal-600 font-medium">
+                Under Care
+              </span>
             </div>
           </div>
 
@@ -335,7 +346,9 @@ export function DoctorDetailsClient({
               <span className="text-2xl font-bold text-slate-900">
                 {doctor.experience || 0}
               </span>
-              <span className="text-xs text-slate-500 font-medium">Years Active</span>
+              <span className="text-xs text-slate-500 font-medium">
+                Years Active
+              </span>
             </div>
           </div>
 
@@ -347,7 +360,9 @@ export function DoctorDetailsClient({
               <span className="text-2xl font-bold text-rose-600">
                 {patients.filter((p) => p.status === "critical").length}
               </span>
-              <span className="text-xs text-rose-600 font-medium">Priority</span>
+              <span className="text-xs text-rose-600 font-medium">
+                Priority
+              </span>
             </div>
           </div>
 
@@ -445,7 +460,8 @@ export function DoctorDetailsClient({
               <Badge variant="info">{patients.length}</Badge>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Individuals currently under medical care or monitoring with Dr. {doctor.name}
+              Individuals currently under medical care or monitoring with Dr.{" "}
+              {doctor.name}
             </p>
           </div>
 
@@ -539,7 +555,10 @@ export function DoctorDetailsClient({
                     >
                       {/* Name & Avatar */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
+                        <Link
+                          href={`/patients/${patient._id}`}
+                          className="flex items-center gap-3"
+                        >
                           <div className="h-9 w-9 rounded-xl bg-teal-50 text-teal-800 border border-teal-100 font-bold flex items-center justify-center shrink-0 overflow-hidden text-xs">
                             {patientImg ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -560,7 +579,7 @@ export function DoctorDetailsClient({
                               ID: {patient._id.slice(-6)}
                             </span>
                           </div>
-                        </div>
+                        </Link>
                       </td>
 
                       {/* Age / Gender */}
@@ -591,10 +610,10 @@ export function DoctorDetailsClient({
                             patient.status === "critical"
                               ? "danger"
                               : patient.status === "under-treatment"
-                              ? "warning"
-                              : patient.status === "recovered"
-                              ? "info"
-                              : "success"
+                                ? "warning"
+                                : patient.status === "recovered"
+                                  ? "info"
+                                  : "success"
                           }
                           className="capitalize text-xs"
                         >
@@ -688,7 +707,9 @@ export function DoctorDetailsClient({
               <select
                 value={patientGender}
                 onChange={(e) =>
-                  setPatientGender(e.target.value as "male" | "female" | "other")
+                  setPatientGender(
+                    e.target.value as "male" | "female" | "other",
+                  )
                 }
                 className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-xs focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
               >
@@ -735,7 +756,7 @@ export function DoctorDetailsClient({
                     | "active"
                     | "under-treatment"
                     | "recovered"
-                    | "critical"
+                    | "critical",
                 )
               }
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-xs focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
@@ -783,7 +804,8 @@ export function DoctorDetailsClient({
             <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
               {doctor.name}
             </span>
-            ? This action cannot be undone and will permanently remove this doctor and their assigned records.
+            ? This action cannot be undone and will permanently remove this
+            doctor and their assigned records.
           </p>
         }
       />
