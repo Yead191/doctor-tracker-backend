@@ -12,6 +12,7 @@ import { handleChunkUpload } from './helpers/handleChunkUpload';
 import { fileStreamHandler } from './helpers/fileStreamingHelper';
 
 const app = express();
+app.set('trust proxy', 1);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -19,10 +20,12 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
-    if (!req.clientIp) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Unable to determine client IP!');
-    }
-    return req.clientIp;
+    return (
+      req.clientIp ||
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.ip ||
+      '127.0.0.1'
+    );
   },
   handler: (req, res, next, options) => {
     throw new ApiError(options?.statusCode, `Rate limit exceeded. Try again in ${options.windowMs / 60000} minutes.`);
